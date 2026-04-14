@@ -21,7 +21,6 @@ def run_ai_analysis(site_text, site_url):
         from google import genai
         client = genai.Client(api_key=GEMINI_API_KEY)
 
-
         prompt = f"""You are an expert SEO analyst. Analyze this website data and provide:
 
 1. **Top 15 Keywords**: The most relevant SEO keywords for this site, with estimated search volume (low/medium/high) and difficulty (low/medium/high). Output as JSON array: [{{"keyword": "...", "volume": "...", "difficulty": "..."}}]
