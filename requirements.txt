@@ -1,6 +1,6 @@
 flask>=2.0
 requests>=2.25
 beautifulsoup4>=4.9
-google-generativeai>=0.3
+google-genai
 python-dotenv
 gunicorn
