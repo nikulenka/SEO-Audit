@@ -353,7 +353,7 @@ function renderAIReadiness(el, cr, ai_analysis) {
         <div class="ai-check"><span class="icon">🤖</span><span class="label">PerplexityBot в robots.txt</span><span class="value ${checkClass(robots.has_perplexitybot)}">${check(robots.has_perplexitybot)}</span></div>
         <div class="ai-check"><span class="icon">🤖</span><span class="label">Google-Extended в robots.txt</span><span class="value ${checkClass(robots.has_google_extended)}">${check(robots.has_google_extended)}</span></div>
         <div class="ai-check"><span class="icon">🗺️</span><span class="label">Sitemap в robots.txt</span><span class="value ${checkClass(robots.has_sitemap)}">${check(robots.has_sitemap)}</span></div>
-        <div class="ai-check"><span class="icon">📋</span><span class="label">llms.txt</span><span class="value ${checkClass(llms.exists)}">${check(llms.exists)} ${llms.exists ? \`(\${llms.size} bytes)\` : 'Отсутствует'}</span></div>
+        <div class="ai-check"><span class="icon">📋</span><span class="label">llms.txt</span><span class="value ${checkClass(llms.exists)}">${check(llms.exists)} ${llms.exists ? '(' + llms.size + ' bytes)' : 'Отсутствует'}</span></div>
 
         <h3 style="margin:2rem 0 1rem;color:var(--blue)">2. E-E-A-T Сигналы (Опыт, Авторитетность, Надежность)</h3>
         <div class="ai-check"><span class="icon">⭐</span><span class="label">Оценка E-E-A-T (1-10)</span><span class="value status-ok" style="font-weight:bold">${eeat.score_1_to_10 || 0} / 10</span></div>
@@ -369,7 +369,7 @@ function renderAIReadiness(el, cr, ai_analysis) {
         <div class="ai-check" style="flex-direction:column;align-items:flex-start">
             <span class="label" style="margin-bottom:0.5rem">💡 Рекомендации по RAG:</span>
             <ul style="color:var(--yellow);margin-left:1rem;line-height:1.5">
-                ${(rag.suggestions || []).map(s => \`<li>\${esc(s)}</li>\`).join('') || '<li>Нет рекомендаций</li>'}
+                ${(rag.suggestions || []).map(s => '<li>' + esc(s) + '</li>').join('') || '<li>Нет рекомендаций</li>'}
             </ul>
         </div>
     `;
