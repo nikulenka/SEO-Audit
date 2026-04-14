@@ -44,6 +44,11 @@ class PageData:
         self.og_title = None
         self.og_description = None
         self.canonical = None
+        self.meta_robots = None
+        self.ttfb = 0.0
+        self.schema_org_types = []
+        self.hreflangs = []
+        self.mixed_content_issues = 0
         self.internal_links = []
         self.external_links = []
         self.internal_link_count = 0
@@ -57,11 +62,11 @@ class PageData:
 def fetch_page(url):
     try:
         resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT, verify=False, allow_redirects=True)
-        return resp.status_code, resp.text, resp.url
+        return resp.status_code, resp.text, resp.url, resp.elapsed.total_seconds()
     except requests.exceptions.Timeout:
-        return 0, "", url
+        return 0, "", url, 0.0
     except Exception as e:
-        return 0, "", url
+        return 0, "", url, 0.0
 
 def check_url_status(url):
     try:
@@ -93,6 +98,29 @@ def extract_meta(soup):
 
     canonical = soup.find("link", attrs={"rel": "canonical"})
     data["canonical"] = canonical.get("href", "").strip() if canonical else None
+    
+    meta_robots = soup.find("meta", attrs={"name": "robots"})
+    data["meta_robots"] = meta_robots.get("content", "").strip() if meta_robots else None
+
+    # Hreflang
+    data["hreflangs"] = [link.get("hreflang") for link in soup.find_all("link", attrs={"rel": "alternate", "hreflang": True})]
+
+    # JSON-LD Schema
+    data["schema_org_types"] = []
+    try:
+        import json
+        for script in soup.find_all("script", type="application/ld+json"):
+            content = script.string
+            if content:
+                parsed = json.loads(content)
+                if isinstance(parsed, dict) and "@type" in parsed:
+                    data["schema_org_types"].append(parsed["@type"])
+                elif isinstance(parsed, list):
+                    for item in parsed:
+                        if isinstance(item, dict) and "@type" in item:
+                            data["schema_org_types"].append(item["@type"])
+    except:
+        pass
 
     return data
 
@@ -265,9 +293,10 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
         pct = 10 + int((i / len(to_crawl)) * 60)
         update_progress(f"[{i+1}/{len(to_crawl)}] {urlparse(url).path or '/'}", pct)
 
-        status, html, final_url = fetch_page(url)
+        status, html, final_url, ttfb = fetch_page(url)
         page = PageData(url)
         page.status = status
+        page.ttfb = ttfb
 
         if status != 200:
             result.stats["errors"] += 1
@@ -319,13 +348,21 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
         page.external_link_count = len(external)
         all_internal_urls.update(internal)
 
-        # Content stats
+        # Content stats & Mixed Content
         stats = extract_content_stats(soup)
         page.has_table = stats["has_table"]
         page.list_count = stats["list_count"]
         page.word_count = stats["word_count"]
         page.images_total = stats["images_total"]
         page.images_no_alt = stats["images_no_alt"]
+        
+        # Mixed content check if main url is https
+        if url.startswith("https://"):
+            http_images = len([img for img in soup.find_all("img", src=True) if img["src"].startswith("http://")])
+            http_scripts = len([s for s in soup.find_all("script", src=True) if s["src"].startswith("http://")])
+            page.mixed_content_issues = http_images + http_scripts
+            if page.mixed_content_issues > 0:
+                result.meta_issues.append({"page": path, "issue": f"Mixed Content: {page.mixed_content_issues} HTTP assets", "current": ""})
 
         # Table opportunity
         if detect_table_opportunity(page, html):
@@ -336,9 +373,7 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
                 "reason": "Содержит списки и ключевые слова — кандидат для таблицы"
             })
 
-        # Interlinking analysis
-        if page.internal_link_count < 3:
-            result.orphan_pages.append({"page": path, "links": page.internal_link_count})
+        # Interlinking analysis (Outgoing Hubs)
         if page.internal_link_count > 20:
             result.hub_pages.append({"page": path, "links": page.internal_link_count})
 
@@ -378,6 +413,16 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
             except:
                 pass
 
+    # Phase 3.5: Identify true Orphan Pages (0 incoming links)
+    update_progress("Поиск 'сиротских' страниц (Orphan Pages)...", 85)
+    all_targets = set()
+    for url, page in result.pages.items():
+        all_targets.update(page.internal_links)
+    
+    for url, page in result.pages.items():
+        if url not in all_targets and url != site_url and url != site_url.rstrip("/"):
+            result.orphan_pages.append({"page": urlparse(url).path or "/", "links": 0})
+
     # Phase 4: AI readiness
     update_progress("Проверяем AI-готовность...", 90)
     result.ai_readiness = check_ai_readiness(site_url)
@@ -389,10 +434,10 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
     update_progress("Аудит завершён!", 100)
     return result
 
-def get_site_text_for_ai(result, max_chars=4000):
+def get_site_text_for_ai(result, max_chars=30000):
     """Extract key text from crawled pages for AI analysis."""
     texts = []
-    for url, page in list(result.pages.items())[:10]:
+    for url, page in list(result.pages.items())[:25]:
         parts = []
         if page.title:
             parts.append(f"Title: {page.title}")
@@ -400,6 +445,9 @@ def get_site_text_for_ai(result, max_chars=4000):
             parts.append(f"H1: {page.h1}")
         if page.description:
             parts.append(f"Desc: {page.description}")
+        if page.schema_org_types:
+            parts.append(f"Schemas: {', '.join(page.schema_org_types)}")
         parts.append(f"URL: {url}")
         texts.append(" | ".join(parts))
+        
     return "\n".join(texts)[:max_chars]

@@ -21,20 +21,30 @@ def run_ai_analysis(site_text, site_url):
         from google import genai
         client = genai.Client(api_key=GEMINI_API_KEY)
 
-        prompt = f"""You are an expert SEO analyst. Analyze this website data and provide:
+        prompt = f"""You are an expert Enterprise SEO & RAG analyst. Analyze this website data and provide a deep GEO (Generative Engine Optimization) analysis:
 
 1. **Top 15 Keywords**: The most relevant SEO keywords for this site, with estimated search volume (low/medium/high) and difficulty (low/medium/high). Output as JSON array: [{{"keyword": "...", "volume": "...", "difficulty": "..."}}]
 
 2. **Top 5 Competitors**: Likely competitor websites in the same niche. Output as JSON array: [{{"name": "...", "url": "...", "strength": "..."}}]
 
-3. **Table Recommendations**: Which pages would benefit most from having HTML tables (for AI search optimization). Output as JSON array: [{{"page": "...", "table_type": "...", "columns": ["..."]}}]
+3. **Table Recommendations**: Which pages would benefit most from having HTML tables (for AI snippets). Output as JSON array: [{{"page": "...", "table_type": "...", "columns": ["..."]}}]
+
+4. **E-E-A-T Signals**: Assess Expertise, Authoritativeness, and Trust based on content/schemas. Output as object: {{"authors_found": true/false, "reputation_markers": ["..."], "score_1_to_10": 8}}
+
+5. **RAG Readiness**: Evaluate how well an LLM can understand this site. Extract main entities and compute topical authority. Output as object: {{"entities_extracted": ["..."], "topical_authority_score": 7, "suggestions": ["..."]}}
 
 Website URL: {site_url}
-Website data:
+Website data (Title/H1/Desc/Schemas per page):
 {site_text}
 
 IMPORTANT: Return ONLY valid JSON in this exact format, no markdown:
-{{"keywords": [...], "competitors": [...], "table_recommendations": [...]}}"""
+{{
+  "keywords": [...], 
+  "competitors": [...], 
+  "table_recommendations": [...],
+  "eeat_signals": {{"authors_found": false, "reputation_markers": [], "score_1_to_10": 5}},
+  "rag_readiness": {{"entities_extracted": [], "topical_authority_score": 5, "suggestions": []}}
+}}"""
 
         response = client.models.generate_content(
             model='gemini-2.5-flash',
@@ -50,7 +60,12 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no markdown:
             text = text[4:]
         return json.loads(text.strip())
     except Exception as e:
-        return {"error": str(e), "keywords": [], "competitors": [], "table_recommendations": []}
+        return {
+            "error": str(e), 
+            "keywords": [], "competitors": [], "table_recommendations": [],
+            "eeat_signals": {"authors_found": False, "reputation_markers": [], "score_1_to_10": 0},
+            "rag_readiness": {"entities_extracted": [], "topical_authority_score": 0, "suggestions": []}
+        }
 
 def audit_worker(job_id, url, max_pages):
     """Background worker for audit job."""

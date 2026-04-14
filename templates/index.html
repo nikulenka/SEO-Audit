@@ -19,6 +19,9 @@
                 <span class="logo-icon">🔍</span>
                 <span class="logo-text">SEO Audit <span class="pro-badge">PRO</span></span>
             </div>
+            <button id="exportJsonBtn" class="btn btn-export" style="display:none; margin-right: 10px;" onclick="exportJSON()">
+                <span>💾</span> Export JSON
+            </button>
             <button id="exportBtn" class="btn btn-export" style="display:none" onclick="exportPDF()">
                 <span>📄</span> Export PDF
             </button>
@@ -102,11 +105,12 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('broken')">🔗 Битые ссылки</button>
             <button class="tab" onclick="switchTab('meta')">📝 Мета-теги</button>
+            <button class="tab" onclick="switchTab('tech_seo')">🔐 Тех. SEO</button>
             <button class="tab" onclick="switchTab('linking')">🔀 Перелинковка</button>
             <button class="tab" onclick="switchTab('keywords')">🔑 Ключевые слова</button>
             <button class="tab" onclick="switchTab('competitors')">🏆 Конкуренты</button>
             <button class="tab" onclick="switchTab('tables')">📊 Таблицы для AI</button>
-            <button class="tab" onclick="switchTab('ai')">🤖 AI Readiness</button>
+            <button class="tab" onclick="switchTab('ai')">🤖 E-E-A-T & AI Readiness</button>
         </div>
 
         <!-- Tab Content -->

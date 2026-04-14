@@ -17,6 +17,7 @@ async function startAudit(e) {
     document.getElementById('progressSection').style.display = 'block';
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('exportBtn').style.display = 'none';
+    document.getElementById('exportJsonBtn').style.display = 'none';
 
     try {
         const resp = await fetch('/api/audit', {
@@ -80,6 +81,7 @@ function renderDashboard(data) {
     document.getElementById('progressSection').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('exportBtn').style.display = 'flex';
+    document.getElementById('exportJsonBtn').style.display = 'flex';
 
     // Stats
     document.getElementById('statPages').textContent = cr.stats.crawled;
@@ -156,7 +158,7 @@ function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     const tabs = document.querySelectorAll('.tab');
-    const tabMap = ['broken', 'meta', 'linking', 'keywords', 'competitors', 'tables', 'ai'];
+    const tabMap = ['broken', 'meta', 'tech_seo', 'linking', 'keywords', 'competitors', 'tables', 'ai'];
     tabMap.forEach((t, i) => { if (t === tab) tabs[i]?.classList.add('active'); });
 
     const container = document.getElementById('tabContent');
@@ -168,11 +170,12 @@ function switchTab(tab) {
     switch (tab) {
         case 'broken': renderBrokenLinks(container, cr); break;
         case 'meta': renderMetaIssues(container, cr); break;
+        case 'tech_seo': renderTechSEO(container, cr); break;
         case 'linking': renderLinking(container, cr); break;
         case 'keywords': renderKeywords(container, ai); break;
         case 'competitors': renderCompetitors(container, ai); break;
         case 'tables': renderTables(container, cr, ai); break;
-        case 'ai': renderAIReadiness(container, cr); break;
+        case 'ai': renderAIReadiness(container, cr, ai); break;
     }
 }
 
@@ -313,24 +316,62 @@ function renderTables(el, cr, ai) {
     el.innerHTML = html;
 }
 
-function renderAIReadiness(el, cr) {
+function renderTechSEO(el, cr) {
+    let rows = Object.values(cr.pages).map(p => `
+        <tr>
+            <td class="url">${esc(p.url)}</td>
+            <td>${p.ttfb ? p.ttfb.toFixed(2) + 's' : '—'}</td>
+            <td class="${p.mixed_content_issues > 0 ? 'status-err' : 'status-ok'}">${p.mixed_content_issues > 0 ? p.mixed_content_issues + ' ош.' : 'OK'}</td>
+            <td>${p.schema_org_types && p.schema_org_types.length > 0 ? esc(p.schema_org_types.join(', ')) : 'Нет'}</td>
+            <td>${p.hreflangs && p.hreflangs.length > 0 ? esc(p.hreflangs.join(', ')) : 'Нет'}</td>
+        </tr>`).join('');
+    el.innerHTML = `<h2>🔐 Техническое SEO & Отклик Сервера</h2>
+        <p style="color:var(--text-secondary);margin-bottom:1rem">Анализ Mixed Content (загрузка http по https), TTFB ответа и разметки Schema.org.</p>
+        <table class="data-table">
+            <thead><tr><th>Страница</th><th>TTFB (Отклик)</th><th>Mixed Content</th><th>Schema.org</th><th>Hreflang</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
+function renderAIReadiness(el, cr, ai_analysis) {
     const ai = cr.ai_readiness || {};
     const robots = ai.robots_txt || {};
     const llms = ai.llms_txt || {};
+    const eeat = ai_analysis.eeat_signals || {};
+    const rag = ai_analysis.rag_readiness || {};
 
     const check = (val) => val ? '✅' : '❌';
     const checkClass = (val) => val ? 'status-ok' : 'status-err';
 
-    el.innerHTML = `<h2>🤖 AI Readiness (Готовность к AI-поиску)</h2>
-        <p style="color:var(--text-secondary);margin-bottom:1.5rem">Проверка файлов, управляющих доступом AI-ботов к контенту сайта.</p>
+    el.innerHTML = `<h2>🤖 AI Readiness & E-E-A-T (Generative Engine Optimization)</h2>
+        <p style="color:var(--text-secondary);margin-bottom:1.5rem">Анализ авторитетности, тематического охвата (RAG-экстракция) и доступности для AI-ботов.</p>
 
+        <h3 style="margin:1rem 0;color:var(--accent)">1. Доступность для AI-Ботов (Crawler Logic)</h3>
         <div class="ai-check"><span class="icon">📄</span><span class="label">robots.txt</span><span class="value ${checkClass(robots.exists)}">${check(robots.exists)} ${robots.exists ? 'Найден' : 'Отсутствует'}</span></div>
         <div class="ai-check"><span class="icon">🤖</span><span class="label">GPTBot (ChatGPT) в robots.txt</span><span class="value ${checkClass(robots.has_gptbot)}">${check(robots.has_gptbot)}</span></div>
         <div class="ai-check"><span class="icon">🤖</span><span class="label">ClaudeBot в robots.txt</span><span class="value ${checkClass(robots.has_claudebot)}">${check(robots.has_claudebot)}</span></div>
         <div class="ai-check"><span class="icon">🤖</span><span class="label">PerplexityBot в robots.txt</span><span class="value ${checkClass(robots.has_perplexitybot)}">${check(robots.has_perplexitybot)}</span></div>
         <div class="ai-check"><span class="icon">🤖</span><span class="label">Google-Extended в robots.txt</span><span class="value ${checkClass(robots.has_google_extended)}">${check(robots.has_google_extended)}</span></div>
         <div class="ai-check"><span class="icon">🗺️</span><span class="label">Sitemap в robots.txt</span><span class="value ${checkClass(robots.has_sitemap)}">${check(robots.has_sitemap)}</span></div>
-        <div class="ai-check"><span class="icon">📋</span><span class="label">llms.txt</span><span class="value ${checkClass(llms.exists)}">${check(llms.exists)} ${llms.exists ? `(${llms.size} bytes)` : 'Отсутствует'}</span></div>
+        <div class="ai-check"><span class="icon">📋</span><span class="label">llms.txt</span><span class="value ${checkClass(llms.exists)}">${check(llms.exists)} ${llms.exists ? \`(\${llms.size} bytes)\` : 'Отсутствует'}</span></div>
+
+        <h3 style="margin:2rem 0 1rem;color:var(--blue)">2. E-E-A-T Сигналы (Опыт, Авторитетность, Надежность)</h3>
+        <div class="ai-check"><span class="icon">⭐</span><span class="label">Оценка E-E-A-T (1-10)</span><span class="value status-ok" style="font-weight:bold">${eeat.score_1_to_10 || 0} / 10</span></div>
+        <div class="ai-check"><span class="icon">✍️</span><span class="label">Авторство контента</span><span class="value ${checkClass(eeat.authors_found)}">${check(eeat.authors_found)}</span></div>
+        <div class="ai-check"><span class="icon">🏅</span><span class="label">Маркеры репутации</span><span class="value" style="color:var(--text-secondary)">${(eeat.reputation_markers || []).join(', ') || 'Нет'}</span></div>
+
+        <h3 style="margin:2rem 0 1rem;color:var(--green)">3. RAG Усвояемость (Topical Authority)</h3>
+        <div class="ai-check"><span class="icon">🧠</span><span class="label">Сложность понимания LLM (1-10)</span><span class="value status-ok" style="font-weight:bold">${rag.topical_authority_score || 0} / 10</span></div>
+        <div class="ai-check" style="flex-direction:column;align-items:flex-start">
+            <span class="label" style="margin-bottom:0.5rem">🔑 Извлеченные сущности (Entities):</span>
+            <span class="value" style="color:var(--text-muted)">${(rag.entities_extracted || []).join(', ') || 'Нет'}</span>
+        </div>
+        <div class="ai-check" style="flex-direction:column;align-items:flex-start">
+            <span class="label" style="margin-bottom:0.5rem">💡 Рекомендации по RAG:</span>
+            <ul style="color:var(--yellow);margin-left:1rem;line-height:1.5">
+                ${(rag.suggestions || []).map(s => \`<li>\${esc(s)}</li>\`).join('') || '<li>Нет рекомендаций</li>'}
+            </ul>
+        </div>
     `;
 }
 
@@ -379,6 +420,31 @@ function exportPDF() {
         tabsElement.style.display = 'flex';
         switchTab(currentTab);
     }, 500);
+}
+
+function exportJSON() {
+    if (!currentData) return;
+    const jsonStr = JSON.stringify(currentData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    
+    // Create a safe filename from the crawled url
+    let filename = 'seo-audit.json';
+    try {
+        const crawlUrl = Object.keys(currentData.crawl_result.pages)[0];
+        if (crawlUrl) {
+            const tempUrl = new URL(crawlUrl);
+            filename = `seo-audit-${tempUrl.hostname}.json`;
+        }
+    } catch(e) {}
+
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // ========== UTILS ==========
