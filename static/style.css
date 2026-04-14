@@ -297,9 +297,44 @@ body {
 
 /* Print / PDF styles */
 @media print {
+    @page { margin: 1.5cm; }
+    
+    * { 
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; 
+        box-shadow: none !important;
+    }
+    
     .app-header, .tabs, .btn, #inputSection, #progressSection { display: none !important; }
-    body { background: white; color: #1a1a1a; }
-    .glass-card { background: white; border: 1px solid #e5e7eb; }
-    .stat-number.danger { color: #dc2626; }
-    .stat-number.warning { color: #d97706; }
+    
+    html, body {
+        background: white !important;
+        color: #000 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    
+    .glass-card { 
+        background: white !important; 
+        border: 1px solid #d1d5db !important; 
+        border-radius: 8px !important;
+        color: #000 !important;
+    }
+    
+    .stat-number.danger { color: #dc2626 !important; }
+    .stat-number.warning { color: #d97706 !important; }
+    
+    h1, h2, h3, h4, h5, h6 { page-break-after: avoid; color: #000 !important; }
+    table, img, .glass-card, .data-table tr { page-break-inside: avoid; }
+    
+    .data-table th { background-color: #f3f4f6 !important; color: #000 !important; border-bottom: 2px solid #ccc !important; }
+    .data-table td { border-bottom: 1px solid #e5e7eb !important; color: #000 !important; }
+    
+    .badge { border: 1px solid #ccc !important; color: #000 !important; background: transparent !important; }
+    .keyword-card, .competitor-card { border: 1px solid #ccc !important; background: transparent !important; }
+    
+    #tabContent { min-height: auto !important; border: none !important; padding: 0 !important; }
+    .app-footer { border-top: 1px solid #ccc !important; color: #666 !important; }
 }

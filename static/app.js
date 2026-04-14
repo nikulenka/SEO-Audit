@@ -338,20 +338,11 @@ function renderAIReadiness(el, cr) {
 
 function exportPDF() {
     if (!currentData) return;
-    const el = document.getElementById('dashboard');
-    const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `SEO-Audit-${new Date().toISOString().slice(0,10)}.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0e1a' },
-        jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
+    
     // Temporarily show all tabs for full export
     const container = document.getElementById('tabContent');
     const originalHTML = container.innerHTML;
-    let fullHTML = '';
+    
     const allTabs = ['broken', 'meta', 'linking', 'keywords', 'competitors', 'tables', 'ai'];
     const cr = currentData.crawl_result;
     const ai = currentData.ai_analysis || {};
@@ -373,15 +364,21 @@ function exportPDF() {
         tempDiv.appendChild(section);
     });
     container.innerHTML = tempDiv.innerHTML;
-
+    
     // Hide tabs during export
-    document.querySelector('.tabs').style.display = 'none';
+    const tabsElement = document.querySelector('.tabs');
+    tabsElement.style.display = 'none';
 
-    html2pdf().set(opt).from(document.getElementById('dashboard')).save().then(() => {
+    // Allow DOM to update before triggering print dialog
+    setTimeout(() => {
+        // Native print dialog is robust and allows selectable text PDF export
+        window.print();
+        
+        // Restore tab state after printing dialog closes
         container.innerHTML = originalHTML;
-        document.querySelector('.tabs').style.display = 'flex';
+        tabsElement.style.display = 'flex';
         switchTab(currentTab);
-    });
+    }, 500);
 }
 
 // ========== UTILS ==========

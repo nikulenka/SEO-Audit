@@ -12,9 +12,9 @@ jobs = {}
 def run_ai_analysis(site_text, site_url):
     """Run Gemini AI analysis for keywords, competitors, tables."""
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+
 
         prompt = f"""You are an expert SEO analyst. Analyze this website data and provide:
 
@@ -31,7 +31,10 @@ Website data:
 IMPORTANT: Return ONLY valid JSON in this exact format, no markdown:
 {{"keywords": [...], "competitors": [...], "table_recommendations": [...]}}"""
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
         text = response.text.strip()
         # Clean up markdown code blocks if present
         if text.startswith("```"):

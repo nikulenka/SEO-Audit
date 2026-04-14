@@ -1,0 +1,29 @@
+Response text: {"keywords": [
+  {"keyword": "техническое творчество минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "робототехника для детей минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "программирование для школьников минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "кружки для детей минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "дополнительное образование минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "курсы 3d моделирования минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "авиамоделирование минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "судомоделирование минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "автомоделирование минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "компьютерные курсы для детей минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "графический дизайн минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "фотокружок минск", "volume": "low", "difficulty": "low"},
+  {"keyword": "робототехника минск", "volume": "medium", "difficulty": "medium"},
+  {"keyword": "детский технопарк минск", "volume": "low", "difficulty": "medium"},
+  {"keyword": "центр технического творчества минск", "volume": "low", "difficulty": "low"}
+], "competitors": [
+  {"name": "IT Princess Academy", "url": "https://it-princess.by", "strength": "strong"},
+  {"name": "Logus IT Academy", "url": "https://logus.by", "strength": "strong"},
+  {"name": "STEM Robotics", "url": "https://stem-robotics.by", "strength": "moderate"},
+  {"name": "Coddy School Minsk", "url": "https://minsk.coddyschool.com", "strength": "strong"},
+  {"name": "IT STEP Academy (Junior IT Step)", "url": "https://itstep.by/childs-courses/", "strength": "strong"}
+], "table_recommendations": [
+  {"page": "Направления (/napravleniya/)", "table_type": "Course Catalog Overview", "columns": ["Направление", "Возраст", "Краткое Описание", "Продолжительность Курса"]},
+  {"page": "Расписание (/raspisanie/)", "table_type": "Weekly Course Schedule", "columns": ["Время", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]},
+  {"page": "Конкурсы (/konkursy/)", "table_type": "Competition and Event Calendar/Results", "columns": ["Название Мероприятия", "Дата", "Категория", "Результаты/Описание"]},
+  {"page": "Приемная (/priyomnaya/)", "table_type": "Enrollment Information Checklist", "columns": ["Вопрос/Пункт", "Ответ/Требование"]},
+  {"page": "Педагогический коллектив (/pedagogicheskiy-kollektiv/)", "table_type": "Teaching Staff Directory", "columns": ["ФИО", "Должность", "Преподаваемые Направления", "Квалификация/Опыт"]}
+]}
