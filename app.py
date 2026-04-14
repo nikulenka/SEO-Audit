@@ -2,9 +2,15 @@
 import json, os, threading, time, uuid
 from flask import Flask, render_template, request, jsonify
 from crawler_engine import run_crawl, get_site_text_for_ai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyAIYgJ6dzJMWk8uwLB8Mbm4S866T9B6_Ic")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    print("WARNING: GEMINI_API_KEY is not set. AI features will not work.")
 
 # In-memory store for audit jobs
 jobs = {}
