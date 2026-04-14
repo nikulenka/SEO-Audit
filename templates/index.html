@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Audit Pro — Глубокий анализ сайта</title>
+    <meta name="description" content="Professional SEO audit tool with AI-powered keyword analysis, broken link detection, and PDF export.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span class="logo-text">SEO Audit <span class="pro-badge">PRO</span></span>
+            </div>
+            <button id="exportBtn" class="btn btn-export" style="display:none" onclick="exportPDF()">
+                <span>📄</span> Export PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- INPUT SECTION -->
+    <section id="inputSection" class="input-section">
+        <div class="input-card glass-card">
+            <h1>Глубокий SEO-аудит сайта</h1>
+            <p class="subtitle">Битые ссылки • Мета-теги • Перелинковка • AI-анализ ключевых слов • Конкуренты • Экспорт PDF</p>
+            <form id="auditForm" onsubmit="startAudit(event)">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="urlInput">URL сайта</label>
+                        <input type="text" id="urlInput" placeholder="example.com" required>
+                    </div>
+                    <div class="input-group small">
+                        <label for="maxPages">Глубина (страниц)</label>
+                        <select id="maxPages">
+                            <option value="20">20</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="btn-text">Запустить аудит</span>
+                        <span class="btn-loader" style="display:none">⏳</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="progressSection" style="display:none">
+        <div class="progress-card glass-card">
+            <div class="progress-header">
+                <span id="progressMessage">Начинаем...</span>
+                <span id="progressPct">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progressBar" class="progress-bar-fill" style="width:0%"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" style="display:none">
+        <!-- Health Score -->
+        <div class="score-row">
+            <div class="score-card glass-card">
+                <div class="score-gauge">
+                    <canvas id="healthGauge" width="200" height="200"></canvas>
+                    <div class="score-number" id="scoreNumber">0</div>
+                </div>
+                <div class="score-label">Health Score</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card glass-card">
+                    <div class="stat-number" id="statPages">0</div>
+                    <div class="stat-label">Просканировано</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-number danger" id="statBroken">0</div>
+                    <div class="stat-label">Битые ссылки</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-number warning" id="statMeta">0</div>
+                    <div class="stat-label">Ошибки мета</div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-number info" id="statTables">0</div>
+                    <div class="stat-label">Для таблиц</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('broken')">🔗 Битые ссылки</button>
+            <button class="tab" onclick="switchTab('meta')">📝 Мета-теги</button>
+            <button class="tab" onclick="switchTab('linking')">🔀 Перелинковка</button>
+            <button class="tab" onclick="switchTab('keywords')">🔑 Ключевые слова</button>
+            <button class="tab" onclick="switchTab('competitors')">🏆 Конкуренты</button>
+            <button class="tab" onclick="switchTab('tables')">📊 Таблицы для AI</button>
+            <button class="tab" onclick="switchTab('ai')">🤖 AI Readiness</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent" class="tab-content glass-card">
+            <!-- Dynamic content injected by JS -->
+        </div>
+    </section>
+
+    <footer class="app-footer">
+        <p>SEO Audit Pro — Powered by Gemini AI & Python</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
