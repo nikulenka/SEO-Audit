@@ -25,7 +25,7 @@ def run_ai_analysis(site_text, site_url):
 
 1. **Top 15 Keywords**: The most relevant SEO keywords for this site, with estimated search volume (low/medium/high) and difficulty (low/medium/high). Output as JSON array: [{{"keyword": "...", "volume": "...", "difficulty": "..."}}]
 
-2. **Top 5 Competitors**: Likely competitor websites in the same niche. Output as JSON array: [{{"name": "...", "url": "...", "strength": "..."}}]
+2. **Top 5 Competitors**: REAL competitor websites in the same niche. You MUST use Google Search to find real, currently existing competitors. DO NOT invent or hallucinate URLs. Output as JSON array: [{{"name": "...", "url": "...", "strength": "..."}}]
 
 3. **Table Recommendations**: Which pages would benefit most from having HTML tables (for AI snippets). Output as JSON array: [{{"page": "...", "table_type": "...", "columns": ["..."]}}]
 
@@ -46,9 +46,13 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no markdown:
   "rag_readiness": {{"entities_extracted": [], "topical_authority_score": 5, "suggestions": []}}
 }}"""
 
+        from google.genai import types
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=prompt
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[{"google_search": {}}]
+            )
         )
         text = response.text.strip()
         # Clean up markdown code blocks if present

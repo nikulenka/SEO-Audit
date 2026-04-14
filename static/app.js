@@ -190,8 +190,8 @@ function renderBrokenLinks(el, cr) {
     }
     let rows = cr.broken_links.map(b => `
         <tr>
-            <td class="url">${esc(b.source)}</td>
-            <td class="url">${esc(b.target)}</td>
+            <td class="url">${linkUrl(b.source)}</td>
+            <td class="url">${linkUrl(b.target)}</td>
             <td class="status-err">${b.status || 'timeout'}</td>
             <td>${b.status >= 400 ? '301 redirect' : 'Проверить'}</td>
         </tr>`).join('');
@@ -213,7 +213,7 @@ function renderMetaIssues(el, cr) {
     const warnings = cr.meta_issues.filter(m => !m.issue.includes('Нет'));
     let rows = cr.meta_issues.map(m => `
         <tr>
-            <td class="url">${esc(m.page)}</td>
+            <td class="url">${linkUrl(m.page)}</td>
             <td class="issue">${esc(m.issue)}</td>
             <td>${esc(m.current || m.current_value || '—')}</td>
             <td>${m.issue.includes('Нет') ? '<span class="badge badge-red">Critical</span>' : '<span class="badge badge-yellow">Warning</span>'}</td>
@@ -234,7 +234,7 @@ function renderLinking(el, cr) {
     if (cr.orphan_pages.length === 0) {
         html += '<p style="color:var(--green);margin-bottom:1.5rem">✅ Все страницы имеют достаточную перелинковку.</p>';
     } else {
-        let rows = cr.orphan_pages.map(p => `<tr><td class="url">${esc(p.page)}</td><td class="status-err">${p.links}</td></tr>`).join('');
+        let rows = cr.orphan_pages.map(p => `<tr><td class="url">${linkUrl(p.page)}</td><td class="status-err">${p.links}</td></tr>`).join('');
         html += `<table class="data-table"><thead><tr><th>Страница</th><th>Внутренних ссылок</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
 
@@ -245,7 +245,7 @@ function renderLinking(el, cr) {
     } else {
         // Sort by link count desc
         const sorted = [...cr.hub_pages].sort((a, b) => b.links - a.links);
-        let rows = sorted.map(p => `<tr><td class="url">${esc(p.page)}</td><td><strong>${p.links}</strong></td></tr>`).join('');
+        let rows = sorted.map(p => `<tr><td class="url">${linkUrl(p.page)}</td><td><strong>${p.links}</strong></td></tr>`).join('');
         html += `<table class="data-table"><thead><tr><th>Страница</th><th>Внутренних ссылок</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
 
@@ -278,7 +278,7 @@ function renderCompetitors(el, ai) {
     let cards = ai.competitors.map(c => `
         <div class="competitor-card">
             <h3>${esc(c.name)}</h3>
-            <div class="comp-url">${esc(c.url || '')}</div>
+            <div class="comp-url">${linkUrl(c.url)}</div>
             <div class="comp-str">${esc(c.strength || '')}</div>
         </div>`).join('');
     el.innerHTML = `<h2>🏆 Конкуренты в нише <span class="badge badge-yellow">${ai.competitors.length}</span></h2>
@@ -454,4 +454,13 @@ function esc(str) {
     const div = document.createElement('div');
     div.textContent = String(str);
     return div.innerHTML;
+}
+
+function linkUrl(url) {
+    if (!url || url === '—') return '—';
+    const safeUrl = esc(url);
+    if (safeUrl.startsWith('http') || safeUrl.startsWith('/')) {
+        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--blue); text-decoration: underline;">${safeUrl}</a>`;
+    }
+    return safeUrl;
 }
