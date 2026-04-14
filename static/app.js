@@ -78,6 +78,17 @@ function renderDashboard(data) {
     const cr = data.crawl_result;
     const ai = data.ai_analysis || {};
 
+    const pageCount = cr.pages ? Object.keys(cr.pages).length : 0;
+    const summaryEl = document.getElementById('scanSummary');
+    if (pageCount === 1) {
+        summaryEl.innerHTML = "ℹ️ Просканирована <strong>только 1 страница</strong>. Вероятно, проверяемый ресурс является одностраничным сайтом (Landing page), либо на нем полностью отсутствует внутренняя навигация и sitemap.xml.";
+        summaryEl.style.borderLeft = "4px solid var(--yellow)";
+    } else {
+        summaryEl.innerHTML = `ℹ️ Просканировано: <strong>${pageCount} страниц</strong>.`;
+        summaryEl.style.borderLeft = "4px solid var(--blue)";
+    }
+    summaryEl.style.display = 'block';
+
     document.getElementById('progressSection').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('exportBtn').style.display = 'flex';
@@ -384,7 +395,7 @@ function exportPDF() {
     const container = document.getElementById('tabContent');
     const originalHTML = container.innerHTML;
     
-    const allTabs = ['broken', 'meta', 'linking', 'keywords', 'competitors', 'tables', 'ai'];
+    const allTabs = ['broken', 'meta', 'tech_seo', 'linking', 'keywords', 'competitors', 'tables', 'ai'];
     const cr = currentData.crawl_result;
     const ai = currentData.ai_analysis || {};
 
@@ -396,11 +407,12 @@ function exportPDF() {
         switch (tab) {
             case 'broken': renderBrokenLinks(section, cr); break;
             case 'meta': renderMetaIssues(section, cr); break;
+            case 'tech_seo': renderTechSEO(section, cr); break;
             case 'linking': renderLinking(section, cr); break;
             case 'keywords': renderKeywords(section, ai); break;
             case 'competitors': renderCompetitors(section, ai); break;
             case 'tables': renderTables(section, cr, ai); break;
-            case 'ai': renderAIReadiness(section, cr); break;
+            case 'ai': renderAIReadiness(section, cr, ai); break;
         }
         tempDiv.appendChild(section);
     });

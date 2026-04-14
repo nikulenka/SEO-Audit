@@ -318,27 +318,26 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
             setattr(page, k, v)
 
         # Check meta issues
-        path = urlparse(url).path or "/"
         if not meta["title"]:
-            result.meta_issues.append({"page": path, "issue": "Нет <title>", "current": ""})
+            result.meta_issues.append({"page": url, "issue": "Нет <title>", "current": ""})
         elif meta["title_len"] > 70:
-            result.meta_issues.append({"page": path, "issue": f"Title длинный ({meta['title_len']} симв.)", "current": meta["title"]})
+            result.meta_issues.append({"page": url, "issue": f"Title длинный ({meta['title_len']} симв.)", "current": meta["title"]})
         elif meta["title_len"] < 10:
-            result.meta_issues.append({"page": path, "issue": f"Title короткий ({meta['title_len']} симв.)", "current": meta["title"]})
+            result.meta_issues.append({"page": url, "issue": f"Title короткий ({meta['title_len']} симв.)", "current": meta["title"]})
 
         if not meta["description"]:
-            result.meta_issues.append({"page": path, "issue": "Нет meta description", "current": ""})
+            result.meta_issues.append({"page": url, "issue": "Нет meta description", "current": ""})
         elif meta["desc_len"] > 160:
-            result.meta_issues.append({"page": path, "issue": f"Description длинный ({meta['desc_len']} симв.)", "current": meta["description"][:80] + "..."})
+            result.meta_issues.append({"page": url, "issue": f"Description длинный ({meta['desc_len']} симв.)", "current": meta["description"][:80] + "..."})
         elif meta["desc_len"] < 50:
-            result.meta_issues.append({"page": path, "issue": f"Description короткий ({meta['desc_len']} симв.)", "current": meta["description"]})
+            result.meta_issues.append({"page": url, "issue": f"Description короткий ({meta['desc_len']} симв.)", "current": meta["description"]})
 
         if not meta["h1"]:
-            result.meta_issues.append({"page": path, "issue": "Нет <h1>", "current": ""})
+            result.meta_issues.append({"page": url, "issue": "Нет <h1>", "current": ""})
         if not meta["og_title"]:
-            result.meta_issues.append({"page": path, "issue": "Нет og:title", "current": ""})
+            result.meta_issues.append({"page": url, "issue": "Нет og:title", "current": ""})
         if not meta["og_description"]:
-            result.meta_issues.append({"page": path, "issue": "Нет og:description", "current": ""})
+            result.meta_issues.append({"page": url, "issue": "Нет og:description", "current": ""})
 
         # Extract links
         internal, external = extract_links(soup, url, site_domain)
@@ -362,12 +361,12 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
             http_scripts = len([s for s in soup.find_all("script", src=True) if s["src"].startswith("http://")])
             page.mixed_content_issues = http_images + http_scripts
             if page.mixed_content_issues > 0:
-                result.meta_issues.append({"page": path, "issue": f"Mixed Content: {page.mixed_content_issues} HTTP assets", "current": ""})
+                result.meta_issues.append({"page": url, "issue": f"Mixed Content: {page.mixed_content_issues} HTTP assets", "current": ""})
 
         # Table opportunity
         if detect_table_opportunity(page, html):
             result.table_opportunities.append({
-                "page": path,
+                "page": url,
                 "list_count": page.list_count,
                 "word_count": page.word_count,
                 "reason": "Содержит списки и ключевые слова — кандидат для таблицы"
@@ -375,7 +374,7 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
 
         # Interlinking analysis (Outgoing Hubs)
         if page.internal_link_count > 20:
-            result.hub_pages.append({"page": path, "links": page.internal_link_count})
+            result.hub_pages.append({"page": url, "links": page.internal_link_count})
 
         result.pages[url] = page
 
@@ -421,7 +420,7 @@ def run_crawl(site_url, max_pages=50, progress_callback=None):
     
     for url, page in result.pages.items():
         if url not in all_targets and url != site_url and url != site_url.rstrip("/"):
-            result.orphan_pages.append({"page": urlparse(url).path or "/", "links": 0})
+            result.orphan_pages.append({"page": url, "links": 0})
 
     # Phase 4: AI readiness
     update_progress("Проверяем AI-готовность...", 90)
